@@ -177,12 +177,6 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 void::MainWindow::deactivate(){
     const QByteArray arrDeactivate = "Deactivate\n";
     writeData(arrDeactivate);
-//    QByteArray dataFromAsp = m_serial->read(10);
-//    showStatusMessage(tr("Deactivate error"));
-//    if (dataFromAsp == arrCheck){
-//        showStatusMessage(tr("Deactivate Ok"));
-//    }
-//    else showStatusMessage(tr("Deactivate error"));
 }
 
 void MainWindow::initActionsConnections()

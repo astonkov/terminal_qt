@@ -158,7 +158,7 @@
   <action name="actionDeactivate">
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../Downloads/deactivate-512.png</normaloff>../../../../../Downloads/deactivate-512.png</iconset>
+     <normaloff>images/deactivate-512.png</normaloff>images/deactivate-512.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Deactivate</string>
