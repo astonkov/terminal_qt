@@ -54,6 +54,8 @@
 
 #include <QMainWindow>
 #include <QSerialPort>
+#include <QPushButton>
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +67,6 @@ class MainWindow;
 
 QT_END_NAMESPACE
 
-class Console;
 class SettingsDialog;
 
 class MainWindow : public QMainWindow
@@ -86,18 +87,26 @@ private slots:
 
     void handleError(QSerialPort::SerialPortError error);
 
+//    void on_sendButton_clicked();
+//    void on_sendMsgLineEdit_returnPressed();
+
+//    void clearAll();
+    void sendTxLineEdit();
+
 private:
     void initActionsConnections();
-    const QByteArray arrCheckDeactivate = "Deactivate OK";
 
 private:
     void showStatusMessage(const QString &message);
 
     Ui::MainWindow *m_ui = nullptr;
     QLabel *m_status = nullptr;
-    Console *m_console = nullptr;
     SettingsDialog *m_settings = nullptr;
     QSerialPort *m_serial = nullptr;
+    QPushButton *m_buttonSend = nullptr;
+    QLineEdit *m_lineEdit = nullptr;
+    const QByteArray arrCheckDeactivate = "Deactivate OK\r";
+
 };
 
 #endif // MAINWINDOW_H

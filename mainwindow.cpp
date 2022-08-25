@@ -51,7 +51,6 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "console.h"
 #include "settingsdialog.h"
 
 #include <QLabel>
@@ -62,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
     m_status(new QLabel),
-    m_console(new Console),
     m_settings(new SettingsDialog),
 //! [1]
     m_serial(new QSerialPort(this))
@@ -70,9 +68,11 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 //! [0]
     m_ui->setupUi(this);
-    m_console->setEnabled(false);
-    setCentralWidget(m_console);
 
+    m_buttonSend = m_ui->sendButton;
+    m_lineEdit = m_ui->sendMsgLineEdit;
+    m_ui->rxTextEdit->setReadOnly(1);
+    m_ui->txTextEdit->setReadOnly(1);
     m_ui->actionConnect->setEnabled(true);
     m_ui->actionDisconnect->setEnabled(false);
     m_ui->actionQuit->setEnabled(true);
@@ -84,12 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initActionsConnections();
 
     connect(m_serial, &QSerialPort::errorOccurred, this, &MainWindow::handleError);
-
-//! [2]
     connect(m_serial, &QSerialPort::readyRead, this, &MainWindow::readData);
-//! [2]
-    connect(m_console, &Console::getData, this, &MainWindow::writeData);
-//! [3]
 }
 //! [3]
 
@@ -110,8 +105,6 @@ void MainWindow::openSerialPort()
     m_serial->setStopBits(p.stopBits);
     m_serial->setFlowControl(p.flowControl);
     if (m_serial->open(QIODevice::ReadWrite)) {
-        m_console->setEnabled(true);
-        m_console->setLocalEchoEnabled(p.localEchoEnabled);
         m_ui->actionConnect->setEnabled(false);
         m_ui->actionDisconnect->setEnabled(true);
         m_ui->actionConfigure->setEnabled(false);
@@ -132,7 +125,6 @@ void MainWindow::closeSerialPort()
 {
     if (m_serial->isOpen())
         m_serial->close();
-    m_console->setEnabled(false);
     m_ui->actionConnect->setEnabled(true);
     m_ui->actionDisconnect->setEnabled(false);
     m_ui->actionConfigure->setEnabled(true);
@@ -160,8 +152,9 @@ void MainWindow::writeData(const QByteArray &data)
 void MainWindow::readData()
 {
     const QByteArray data = m_serial->readAll();
-    if (data == arrCheckDeactivate) showStatusMessage(data);
-    m_console->putData(data);
+    m_ui->rxTextEdit->insertPlainText(data);
+    if (data == arrCheckDeactivate)
+        showStatusMessage(data);
 }
 //! [7]
 
@@ -175,8 +168,9 @@ void MainWindow::handleError(QSerialPort::SerialPortError error)
 }
 //! [8]
 void::MainWindow::deactivate(){
-    const QByteArray arrDeactivate = "Deactivate\n";
+    const QByteArray arrDeactivate = "Deactivate\r\n";
     writeData(arrDeactivate);
+    m_ui->txTextEdit->insertPlainText(arrDeactivate);
 }
 
 void MainWindow::initActionsConnections()
@@ -185,13 +179,35 @@ void MainWindow::initActionsConnections()
     connect(m_ui->actionDisconnect, &QAction::triggered, this, &MainWindow::closeSerialPort);
     connect(m_ui->actionQuit, &QAction::triggered, this, &MainWindow::close);
     connect(m_ui->actionConfigure, &QAction::triggered, m_settings, &SettingsDialog::show);
-    connect(m_ui->actionClear, &QAction::triggered, m_console, &Console::clear);
+//    connect(m_ui->actionClear, &QAction::triggered, m_console, &Console::clear);
     connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(m_ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(m_ui->actionDeactivate, &QAction::triggered, this, &MainWindow::deactivate);
+
+    connect(m_buttonSend, SIGNAL(clicked(bool)), this, SLOT(sendTxLineEdit()));
+    connect(m_lineEdit, SIGNAL(returnPressed()), this, SLOT(sendTxLineEdit()));
+
+
 }
 
 void MainWindow::showStatusMessage(const QString &message)
 {
     m_status->setText(message);
+}
+
+//void MainWindow::on_sendButton_clicked()
+//{
+//    sendTxLineEdit();
+//}
+
+//void MainWindow::on_sendMsgLineEdit_returnPressed()
+//{
+//    sendTxLineEdit();
+//}
+
+void MainWindow::sendTxLineEdit(){
+    const QByteArray sendToUart = m_ui->sendMsgLineEdit->text().toUtf8();
+    writeData(sendToUart);
+    m_ui->txTextEdit->insertPlainText(m_ui->sendMsgLineEdit->text());
+    m_ui->sendMsgLineEdit->clear();
 }

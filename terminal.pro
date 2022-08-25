@@ -7,13 +7,11 @@ TEMPLATE = app
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    settingsdialog.cpp \
-    console.cpp
+    settingsdialog.cpp
 
 HEADERS += \
     mainwindow.h \
-    settingsdialog.h \
-    console.h
+    settingsdialog.h
 
 FORMS += \
     mainwindow.ui \
