@@ -69,8 +69,6 @@ MainWindow::MainWindow(QWidget *parent) :
 //! [0]
     m_ui->setupUi(this);
 
-    m_buttonSend = m_ui->sendButton;
-    m_lineEdit = m_ui->sendMsgLineEdit;
     m_ui->rxTextEdit->setReadOnly(1);
     m_ui->txTextEdit->setReadOnly(1);
     m_ui->actionConnect->setEnabled(true);
@@ -78,6 +76,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_ui->actionQuit->setEnabled(true);
     m_ui->actionConfigure->setEnabled(true);
     m_ui->actionDeactivate->setEnabled(false);
+    m_ui->sendButton->setEnabled(0);
+    m_ui->sendMsgLineEdit->setEnabled(0);
 
     m_ui->statusBar->addWidget(m_status);
 
@@ -109,6 +109,8 @@ void MainWindow::openSerialPort()
         m_ui->actionDisconnect->setEnabled(true);
         m_ui->actionConfigure->setEnabled(false);
         m_ui->actionDeactivate->setEnabled(true);
+        m_ui->sendButton->setEnabled(1);
+        m_ui->sendMsgLineEdit->setEnabled(1);
         showStatusMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
                           .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                           .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
@@ -129,6 +131,8 @@ void MainWindow::closeSerialPort()
     m_ui->actionDisconnect->setEnabled(false);
     m_ui->actionConfigure->setEnabled(true);
     m_ui->actionDeactivate->setEnabled(false);
+    m_ui->sendButton->setEnabled(0);
+    m_ui->sendMsgLineEdit->setEnabled(0);
     showStatusMessage(tr("Disconnected"));
 }
 //! [5]
@@ -179,15 +183,13 @@ void MainWindow::initActionsConnections()
     connect(m_ui->actionDisconnect, &QAction::triggered, this, &MainWindow::closeSerialPort);
     connect(m_ui->actionQuit, &QAction::triggered, this, &MainWindow::close);
     connect(m_ui->actionConfigure, &QAction::triggered, m_settings, &SettingsDialog::show);
-//    connect(m_ui->actionClear, &QAction::triggered, m_console, &Console::clear);
+    connect(m_ui->actionClear, &QAction::triggered, this, &MainWindow::clearAll);
     connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(m_ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(m_ui->actionDeactivate, &QAction::triggered, this, &MainWindow::deactivate);
 
-    connect(m_buttonSend, SIGNAL(clicked(bool)), this, SLOT(sendTxLineEdit()));
-    connect(m_lineEdit, SIGNAL(returnPressed()), this, SLOT(sendTxLineEdit()));
-
-
+    connect(m_ui->sendButton, SIGNAL(clicked(bool)), this, SLOT(sendTxLineEdit()));
+    connect(m_ui->sendMsgLineEdit, SIGNAL(returnPressed()), this, SLOT(sendTxLineEdit()));
 }
 
 void MainWindow::showStatusMessage(const QString &message)
@@ -195,19 +197,15 @@ void MainWindow::showStatusMessage(const QString &message)
     m_status->setText(message);
 }
 
-//void MainWindow::on_sendButton_clicked()
-//{
-//    sendTxLineEdit();
-//}
-
-//void MainWindow::on_sendMsgLineEdit_returnPressed()
-//{
-//    sendTxLineEdit();
-//}
-
 void MainWindow::sendTxLineEdit(){
     const QByteArray sendToUart = m_ui->sendMsgLineEdit->text().toUtf8();
     writeData(sendToUart);
     m_ui->txTextEdit->insertPlainText(m_ui->sendMsgLineEdit->text());
     m_ui->sendMsgLineEdit->clear();
+}
+
+void MainWindow::clearAll(){
+    m_ui->sendMsgLineEdit->clear();
+    m_ui->rxTextEdit->clear();
+    m_ui->txTextEdit->clear();
 }

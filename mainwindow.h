@@ -87,10 +87,7 @@ private slots:
 
     void handleError(QSerialPort::SerialPortError error);
 
-//    void on_sendButton_clicked();
-//    void on_sendMsgLineEdit_returnPressed();
-
-//    void clearAll();
+    void clearAll();
     void sendTxLineEdit();
 
 private:
